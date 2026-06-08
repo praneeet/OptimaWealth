@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  optimawealth:
+    build: .
+    container_name: optimawealth-app
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount finance.db so database records persist outside the container
+      - ./finance.db:/app/finance.db
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: always
