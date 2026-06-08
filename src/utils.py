@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 def inject_custom_css():
     """Injects custom CSS to style the Streamlit interface for a premium dark mode, glassmorphic look."""
