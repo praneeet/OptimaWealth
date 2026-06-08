@@ -28,8 +28,6 @@ jobs:
       env:
         PYTHONPATH: .
       run: |
-        python -c "import sys; print('System Path:', sys.path)"
-        python -c "import src.database; import src.categorizer; import src.optimizer; import src.forecasting; import src.utils; print('All src modules imported successfully!')"
         python tests/run_tests.py
 
 
