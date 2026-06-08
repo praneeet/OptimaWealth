@@ -28,6 +28,6 @@ jobs:
       env:
         PYTHONPATH: .
       run: |
-        python tests/run_tests.py
+        python -m pytest -v --tb=short
 
 
