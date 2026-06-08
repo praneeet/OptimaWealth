@@ -1,9 +1,9 @@
 import subprocess
 import sys
+import urllib.request
 
 def run():
     print("Running pytest suite...")
-    # Run pytest and capture stdout and stderr
     result = subprocess.run(
         [sys.executable, "-m", "pytest", "-v", "--tb=short"],
         stdout=subprocess.PIPE,
@@ -18,21 +18,27 @@ def run():
         print(result.stderr, file=sys.stderr)
         
     if result.returncode != 0:
-        # Extract failures section to print as a GitHub Action error annotation
-        output = result.stdout
-        failures_marker = "============================= FAILURES ============================="
-        failures_idx = output.find(failures_marker)
-        
-        if failures_idx != -1:
-            failures_text = output[failures_idx:]
-        else:
-            # Fallback to the last 2000 characters if marker isn't found
-            failures_text = output[-2000:]
+        full_log = result.stdout
+        if result.stderr:
+            full_log += "\n=== STDERR ===\n" + result.stderr
             
-        # Format the text for GitHub Actions annotation (escape newlines)
-        escaped_text = failures_text.replace("\n", "%0A").replace("\r", "")
-        print(f"::error title=Pytest Failures Summary::{escaped_text}")
-        
+        # Attempt to upload to paste.rs
+        try:
+            req = urllib.request.Request(
+                "https://paste.rs",
+                data=full_log.encode("utf-8"),
+                headers={"Content-Type": "text/plain", "User-Agent": "Mozilla/5.0"}
+            )
+            with urllib.request.urlopen(req) as response:
+                paste_url = response.read().decode("utf-8").strip()
+            print(f"\nUploaded test failures to: {paste_url}")
+            # Output short error annotation with the URL
+            print(f"::error title=Pytest Failures Link::Click here to view full test logs: {paste_url}")
+        except Exception as e:
+            print(f"Failed to upload logs to paste.rs: {e}")
+            # Fallback to local printing
+            print(f"::error title=Pytest Failures::Tests failed with exit code {result.returncode}")
+            
     sys.exit(result.returncode)
 
 if __name__ == "__main__":
